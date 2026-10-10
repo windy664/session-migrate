@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import math
+import os
 import re
 import uuid
 from collections import Counter, defaultdict, deque
@@ -25,7 +26,20 @@ from session_migrate.model import AgentFormat, Event, EventKind, Provenance, Rol
 PINNED_OPENCODE_VERSION = "1.17.20"
 OPENCODE_NATIVE_IMPORT_SUPPORTED = True
 OPENCODE_IMPORT_MEDIA_TYPES = {"image/gif", "image/jpeg", "image/png", "image/webp"}
-MAX_NATIVE_BYTES = 256 * 1024 * 1024
+
+
+def _env_bytes(name: str, default: int) -> int:
+    value = os.environ.get(name)
+    if not value:
+        return default
+    try:
+        parsed = int(value)
+    except ValueError:
+        return default
+    return parsed if parsed > 0 else default
+
+
+MAX_NATIVE_BYTES = _env_bytes("SESSION_MIGRATE_MAX_BUNDLE_BYTES", 256 * 1024 * 1024)
 MAX_NATIVE_MESSAGES = 1_000_000
 MAX_NATIVE_PARTS = 4_000_000
 MAX_JSON_DEPTH = 128

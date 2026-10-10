@@ -14,9 +14,21 @@ from typing import Any
 
 from session_migrate.errors import JsonlError
 
-DEFAULT_MAX_RECORD_BYTES = 64 * 1024 * 1024
-DEFAULT_MAX_TOTAL_BYTES = 256 * 1024 * 1024
-DEFAULT_MAX_RECORDS = 100_000
+
+def _env_limit(name: str, default: int) -> int:
+    value = os.environ.get(name)
+    if not value:
+        return default
+    try:
+        parsed = int(value)
+    except ValueError:
+        return default
+    return parsed if parsed > 0 else default
+
+
+DEFAULT_MAX_RECORD_BYTES = _env_limit("SESSION_MIGRATE_MAX_RECORD_BYTES", 64 * 1024 * 1024)
+DEFAULT_MAX_TOTAL_BYTES = _env_limit("SESSION_MIGRATE_MAX_TOTAL_BYTES", 256 * 1024 * 1024)
+DEFAULT_MAX_RECORDS = _env_limit("SESSION_MIGRATE_MAX_RECORDS", 100_000)
 
 
 @dataclass(frozen=True, slots=True)
